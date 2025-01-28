@@ -3,6 +3,7 @@ package com.demo.joins;
 import java.util.List;
 
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.Optional;
 
 import com.demo.config.SparkContextUtil;
 import com.demo.config.SparkSessionUtil;
@@ -10,10 +11,25 @@ import com.demo.config.SparkSessionUtil;
 import scala.Tuple2;
 
 public class Spark_08 {
-
+	
 	public static void main(String[] args) {
 
-		try (final var sparkSession = SparkSessionUtil.createSession("Spark_06");
+		try (final var sparkSession = SparkSessionUtil.createSession("Spark_08");
+				final var sc = SparkContextUtil.createContext(sparkSession)) {
+			JavaPairRDD<Integer, String> customersRdd = sc.parallelizePairs(getCustomers());
+			JavaPairRDD<Integer, Double> billsRdd = sc.parallelizePairs(getBills());
+			// Will give all records from customer's rdd because it is left outer join
+			JavaPairRDD<Integer, Tuple2<String, Optional<Double>>> leftJoinRdd = customersRdd.leftOuterJoin(billsRdd);
+			leftJoinRdd.collect().forEach(System.out::println);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void main1(String[] args) {
+
+		try (final var sparkSession = SparkSessionUtil.createSession("Spark_08");
 				final var sc = SparkContextUtil.createContext(sparkSession)) {
 			JavaPairRDD<Integer, String> customersRdd = sc.parallelizePairs(getCustomers());
 			JavaPairRDD<Integer, Double> billsRdd = sc.parallelizePairs(getBills());
